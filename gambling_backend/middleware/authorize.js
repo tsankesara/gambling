@@ -16,6 +16,7 @@ module.exports = function (req, res, next) {
 		//it is going to give the user id (user:{id: user.id})
 		const verify = jwt.verify(token, process.env.jwtSecret);
 		req.body.id = verify.user.id;
+		req.body.is_admin = verify.user.is_admin;
 		next();
 	} catch (err) {
 		res.status(401).json({ msg: 'Token is not valid' });

@@ -72,7 +72,10 @@ router.post('/login', async (req, res) => {
 		if (!validPassword) {
 			return res.status(401).json('Invalid password');
 		}
-		const jwtToken = jwtGenerator(user.rows[0].user_id); //ADD is ADMIN
+		const jwtToken = jwtGenerator(
+			user.rows[0].user_id,
+			user.rows[0].is_admin,
+		); //ADD is ADMIN
 		return res.json({ jwtToken });
 	} catch (err) {
 		console.error(err.message);

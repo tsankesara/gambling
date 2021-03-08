@@ -13,6 +13,7 @@ gender VARCHAR(6),
 current_bal INT,
 whats_app_no INT,
 Payment_Details VARCHAR[],
+is_admin BOOLEAN DEFAULT('f')
 wins BIGINT NOT NULL DEFAULT(0),
 loses BIGINT NOT NULL DEFAULT(0),
 Draws BIGINT NOT NULL DEFAULT(0)
@@ -23,22 +24,23 @@ match_id BIGSERIAL UNIQUE NOT NULL,
 PRIMARY KEY (match_id),
 match_desc VARCHAR(100),
 player_1 BIGINT NOT NULL UNIQUE,
-player_2 BIGINT NOT NULL UNIQUE,
+player_2 BIGINT UNIQUE,
 FOREIGN KEY (player_1) REFERENCES users(user_id),
 FOREIGN KEY (player_2) REFERENCES users(user_id),
 game INT NOT NULL,
 FOREIGN KEY (game) REFERENCES games(game_id),
+requested_bet BIGINT NOT NULL,
 betted_amount INT,
 commission_amount INT,
 winable_amount INT,
 is_finnished BOOLEAN DEFAULT('f'),
-winner BIGINT NOT NULL ,
+winner BIGINT,
 FOREIGN KEY (winner) REFERENCES users(user_id),
 dispute BOOLEAN DEFAULT('f'),
 match_created_at TIMESTAMP
 );
 CREATE TABLE games(
-    game_id INT NOT NULL,
+    game_id BIGSERIAL NOT NULL UNIQUE,
     PRIMARY KEY (game_id),
     game_name VARCHAR(50) UNIQUE NOT NULL);
 

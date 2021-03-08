@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const authorize = require('../middleware/authorize');
 const pool = require('../db');
+const admin_auth = require('../middleware/admin_auth');
 router.post('/addMoney', authorize, async (req, res) => {
 	const { id, newMoney } = req.body;
-	console.log(id);
 	try {
 		const user = await pool.query(
 			'SELECT * FROM users WHERE user_id = $1',
