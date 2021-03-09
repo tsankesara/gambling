@@ -3,23 +3,23 @@ const router = express.Router();
 const authorize = require('../middleware/authorize');
 const pool = require('../db');
 const admin_auth = require('../middleware/admin_auth');
-router.post('/addMoney', authorize, async (req, res) => {
-	const { id, newMoney } = req.body;
+const cloudinary = require('../utils/cloudinary');
+router.post('/addMoneyClaim', authorize, async (req, res) => {
+	const { id, newMoney, image } = req.body;
 	try {
-		const user = await pool.query(
-			'SELECT * FROM users WHERE user_id = $1',
-			[id],
+		const addImage = await cloudinary.uploader.upload(image);
+		const insertImage = await pool.query(
+			'INSERT into images (cloudinary_id, image_url) VALUES ($1, $2) RETURNING *',
+			[addImage.public_id, addImage.secure_url],
 		);
-		// return res.status(200).json(user);
-		newBal = user.rows[0].current_bal + newMoney;
-		moneyUpdate = await pool.query(
-			'UPDATE users SET current_bal= $1 WHERE user_id= $2 RETURNING username, email, phone_number, current_bal',
-			[newBal, id],
+		const addMoneyClaim = await pool.query(
+			'INSERT into add_money_claim (amount, request_by, proof) VALUES ($1, $2, $3) RETURNING *',
+			[newMoney, id, insertImage.rows[0].image_id],
 		);
-		return res.status(200).json(moneyUpdate);
+		return res.status(200).json(addMoneyClaim.rows[0]);
 	} catch (error) {
-		console.error(error.message);
-		return res.json(error);
+		console.error(error);
+		return res.json(error.message);
 	}
 });
 
