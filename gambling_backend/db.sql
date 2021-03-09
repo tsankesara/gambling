@@ -33,7 +33,7 @@ requested_bet BIGINT NOT NULL,
 betted_amount INT,
 commission_amount INT,
 winable_amount INT,
-is_finnished BOOLEAN DEFAULT('f'),
+in_progress BOOLEAN DEFAULT('f'),
 winner BIGINT,
 FOREIGN KEY (winner) REFERENCES users(user_id),
 dispute BOOLEAN DEFAULT('f'),
@@ -57,5 +57,18 @@ CREATE TABLE reports(
     contact_no VARCHAR(15) NOT NULL
 );
 
+CREATE TABLE payment_claim (
+    payment_id BIGSERIAL UNIQUE NOT NULL,
+    PRIMARY KEY (payment_id),
+    amount INT not null,
+    foreign key (user) REFERENCES users(user_id),
+    is_approved BOOLEAN DEFAULT('f'),
+)
+
+CREATE TABLE images (
+    image_id BIGSERIAL UNIQUE NOT NULL,
+    PRIMARY KEY (image_id),
+    cloudinary_id TEXT NOT NULL,
+    image_url TEXT NOT NULL)
 TODO
 #MEGGAGES
