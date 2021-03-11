@@ -16,6 +16,7 @@ const auth = require('./routes/auth');
 const money = require('./routes/money');
 const user = require('./routes/user');
 const matches = require('./routes/matches');
+const cpanel = require('./routes/cpanel');
 
 app.use(cors());
 app.use(logger('dev'));
@@ -25,6 +26,7 @@ app.use('/api', auth);
 app.use('/api', money);
 app.use('/api', user);
 app.use('/api', matches);
+app.use('/api/cpanel', cpanel);
 
 const port = 8000;
 
