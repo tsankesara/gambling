@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const authorize = require('../middleware/authorize');
 const pool = require('../db');
+
+// TODO
+// Join Match
+// Win Claim
+// Dispuit
+
 router.post('/proposeMatch', authorize, async (req, res) => {
 	const { id, match_desc, game, requested_bet } = req.body;
 	// req_bet, player_1,

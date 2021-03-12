@@ -13,7 +13,7 @@ router.post('/addMoneyClaim', authorize, async (req, res) => {
 			[addImage.public_id, addImage.secure_url],
 		);
 		const addMoneyClaim = await pool.query(
-			'INSERT into add_money_claim (amount, request_by, proof) VALUES ($1, $2, $3) RETURNING *',
+			'INSERT into money_claim (amount, request_by, proof) VALUES ($1, $2, $3) RETURNING *',
 			[newMoney, id, insertImage.rows[0].image_id],
 		);
 		return res.status(200).json(addMoneyClaim.rows[0]);
