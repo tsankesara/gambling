@@ -7,10 +7,12 @@ const pool = require('../db');
 // Join Match
 // Win Claim
 // Dispuit
+// ADD FUNDING AND START MATCH!
 
 router.post('/proposeMatch', authorize, async (req, res) => {
 	const { id, match_desc, game, requested_bet } = req.body;
 	// req_bet, player_1,
+	//ADD isFunding
 	try {
 		checkStuff = await pool.query(
 			'SELECT current_bal, is_frozen FROM users WHERE user_id = $1',
@@ -27,6 +29,7 @@ router.post('/proposeMatch', authorize, async (req, res) => {
 		if (requested_bet > current_bal) {
 			return res.status(300).json('Insufficent Balancec');
 		}
+
 		let commission_amount = 0;
 		if (requested_bet <= 100) {
 			commission_amount = (7 / 100) * requested_bet;
@@ -72,6 +75,33 @@ router.get('/getAvailableMatch', authorize, async (req, res) => {
 		return res.status(200).json(getMatch);
 	} catch (error) {
 		console.error(error.message);
+		return res.status(500).json(error);
+	}
+});
+
+router.post('/joinMatch', authorize, async (req, res) => {
+	const { match_id, id } = req.body;
+	try {
+		const Match = await pool.query(
+			'SELECT * FROM matches WHERE match_id = $1',
+			[match_id],
+		);
+		const getCurrBal = await pool.query(
+			'SELECT current_bal FROM users WHERE user_id = $1',
+			[id],
+		);
+		if (getCurrBal.rows[0].current_bal < Match.rows[0].requested_bet) {
+			return res
+				.status(201)
+				.json('Insufficent Balance For Joining Match');
+		}
+		const updateMatch = await pool.query(
+			'UPDATE matches SET player_2 = $1 WHERE match_id = $2 RETURNING *',
+			[id, match_id],
+		);
+		return res.status(200).json(updateMatch);
+	} catch (error) {
+		console.floorog(error);
 		return res.status(500).json(error);
 	}
 });

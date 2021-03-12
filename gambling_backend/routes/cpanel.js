@@ -49,6 +49,4 @@ router.patch('/approveMoneyClaim', authorize, admin_auth, async (req, res) => {
 	}
 });
 
-router.put('/approveMoney', authorize, admin_auth, async (req, res) => {});
-
 module.exports = router;
