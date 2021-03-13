@@ -96,12 +96,69 @@ router.post('/joinMatch', authorize, async (req, res) => {
 				.json('Insufficent Balance For Joining Match');
 		}
 		const updateMatch = await pool.query(
-			'UPDATE matches SET player_2 = $1 WHERE match_id = $2 RETURNING *',
-			[id, match_id],
+			'UPDATE matches SET player_2 = $1, status = $2 WHERE match_id = $3 RETURNING *',
+			[id, 'Joined', match_id],
 		);
-		return res.status(200).json(updateMatch);
+		return res.status(200).json(updateMatch.rows[0]);
 	} catch (error) {
-		console.floorog(error);
+		console.log(error);
+		return res.status(500).json(error);
+	}
+});
+
+router.patch('/fundMatch', authorize, async (req, res) => {
+	const { id, match_id } = req.body;
+	try {
+		const getMatch = await pool.query(
+			'SELECT * FROM matches WHERE match_id = $1',
+			[match_id],
+		);
+		let user;
+		if (getMatch.rows[0].player_1 === id) {
+			user = getMatch.rows[0].player_1;
+			let queryHelp = 'player_1_funded';
+		} else if (getMatch.rows[0].player_2 === id) {
+			user = getMatch.rows[0].player_2;
+			let queryHelp = 'player_2_funded';
+		} else {
+			return res
+				.status(201)
+				.json('User not matched with match', getMatch.rows[0], id);
+		}
+		const getUser = await pool.query(
+			'SELECT * FROM users WHERE user_id = $1',
+			[user],
+		);
+		if (getUser.rows[0].is_frozen) {
+			return res
+				.status(201)
+				.json('Your account is frozen, contact Admin');
+		}
+		if (getUser.rows[0].current_bal < getMatch.rows[0].requested_bet) {
+			return res
+				.status(201)
+				.json('Insufficent Balance for funding the match.');
+		}
+		const updateUserBal = await pool.query(
+			'UPDATE users SET current_bal = $1 WHERE user_id = $2 RETURNING current_bal, username, email',
+			[
+				getUser.rows[0].current_bal -
+					getMatch.rows[0].requested_bet,
+				user,
+			],
+		);
+		console.log(user, queryHelp);
+		const fundMatch = await pool.query(
+			`UPDATE matches SET ${queryHelp} = $1 WHERE match_id = $2 RETURNING *`,
+			['true', match_id],
+		);
+		return res.status(200).json({
+			message: 'Match Has Been Funded',
+			...fundMatch.rows[0],
+			...updateUserBal.rows[0],
+		});
+	} catch (error) {
+		console.log(error);
 		return res.status(500).json(error);
 	}
 });
