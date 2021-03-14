@@ -2,12 +2,12 @@ const express = require('express');
 const router = express.Router();
 const authorize = require('../middleware/authorize');
 const pool = require('../db');
-
+const cloudinary = require('../utils/cloudinary');
 // TODO
-// Join Match
+// Join Match DONE
 // Win Claim
 // Dispuit
-// ADD FUNDING AND START MATCH!
+// ADD FUNDING AND START MATCH! DONE
 
 router.post('/proposeMatch', authorize, async (req, res) => {
 	const { id, match_desc, game, requested_bet } = req.body;
@@ -79,7 +79,7 @@ router.get('/getAvailableMatch', authorize, async (req, res) => {
 	}
 });
 
-router.post('/joinMatch', authorize, async (req, res) => {
+router.patch('/joinMatch', authorize, async (req, res) => {
 	const { match_id, id } = req.body;
 	try {
 		const Match = await pool.query(
@@ -157,6 +157,66 @@ router.patch('/fundMatch', authorize, async (req, res) => {
 			...fundMatch.rows[0],
 			...updateUserBal.rows[0],
 		});
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json(error);
+	}
+});
+router.patch('/startMatch', authorize, async (req, res) => {
+	const { id, match_id } = req.body;
+	try {
+		const getMatch = await pool.query(
+			'SELECT player_1, player_2, player_1_funded, player_2_funded FROM matches WHERE match_id = $1',
+			[match_id],
+		);
+		if (
+			getMatch.rows[0].player_1_funded &&
+			getMatch.rows[0].player_1_funded
+		) {
+			const startMatch = await pool.query(
+				'UPDATE matches SET status = $1 WHERE match_id = $2 RETURNING *',
+				['InProgress', match_id],
+			);
+			return res
+				.status(200)
+				.json('Match has been Started!', startMatch.rows[0]);
+		}
+	} catch (error) {
+		console.log(error);
+		return res.status(500).json(error);
+	}
+});
+
+router.post('/win_claim', authorize, async (req, res) => {
+	const { id, image, match_id } = req.body;
+	try {
+		const getMatch = await pool.query(
+			'SELECT * FROM win_claim WHERE match_id =  $1',
+			[match_id],
+		);
+		if (getMatch.rowCount > 0) {
+			return res
+				.status(201)
+				.json(
+					'Opponent has filled a winning claim, if you suspect something wrong with result file dispute',
+				);
+		}
+		const addImage = await cloudinary.uploader.upload(image);
+		const insertImage = await pool.query(
+			'INSERT into images (cloudinary_id, image_url) VALUES ($1, $2) RETURNING *',
+			[addImage.public_id, addImage.secure_url],
+		);
+		const image_id = insertImage.rows[0].image_id;
+		const insertClaim = await pool.query(
+			'INSERT into win_claim (match_id, claim_by, winner_proof) VALUES($1, $2, $3) RETURNING *',
+			[match_id, id, image_id],
+		);
+		return res
+			.status(200)
+			.json({
+				message: 'Claim has been filed',
+				...insertClaim.rows[0],
+			});
 	} catch (error) {
 		console.log(error);
 		return res.status(500).json(error);
