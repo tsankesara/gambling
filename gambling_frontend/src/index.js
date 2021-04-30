@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import axios from 'axios';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -17,7 +16,7 @@ const findToken = () => {
 
 axios.defaults.baseURL = 'http://localhost:8000/api';
 axios.defaults.headers.common['jwt_token'] = findToken();
-axios.defaults.headers.post['Content-Type'] = 'application/json';
+// axios.defaults.headers.post['Content-Type'] = 'application/json';
 
 ReactDOM.render(
 	<React.StrictMode>

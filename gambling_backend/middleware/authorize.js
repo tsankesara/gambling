@@ -19,6 +19,9 @@ module.exports = function (req, res, next) {
 		req.body.is_admin = verify.user.is_admin;
 		next();
 	} catch (err) {
-		res.status(401).json({ msg: 'Token is not valid' });
+		res.status(401).json({
+			jwtAuth: false,
+			message: 'Session Expired! Login Again',
+		});
 	}
 };

@@ -1,12 +1,10 @@
+import axios from 'axios';
 import React, { useState, useEffect } from 'react';
-import { Form, Button } from 'react-bootstrap';
+import { Redirect } from 'react-router';
 import validator from 'validator';
-import { Redirect } from 'react-router-dom';
-
 import checkIsAuth from '../tools/isAuth';
 
-const axios = require('axios');
-const SignUp = () => {
+const SignUpComponent = () => {
 	const [isAuth, setIsAuth] = useState(false);
 	const [Username, setUsername] = useState('');
 	const [Email, setEmail] = useState('');
@@ -19,8 +17,6 @@ const SignUp = () => {
 		let authBool = checkIsAuth();
 		setIsAuth(authBool);
 	}, [isUpdate]);
-
-	// const signUp = axios.post(`${process.env.API_URI}/signup`, )
 
 	const validateAndSignUp = (e) => {
 		e.preventDefault();
@@ -77,10 +73,11 @@ const SignUp = () => {
 			},
 			(error) => {
 				console.log(error);
-				setIsUpdate(false);
+				setIsUpdate(!isUpdate);
 			},
 		);
 	};
+
 	return (
 		<>
 			{isAuth ? (
@@ -156,4 +153,4 @@ const SignUp = () => {
 	);
 };
 
-export default SignUp;
+export default SignUpComponent;
